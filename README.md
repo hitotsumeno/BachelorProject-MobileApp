@@ -45,7 +45,7 @@ Aplikácia je organizovaná **feature-first** (podľa funkcií, nie podľa techn
 | Archív (Archive) | Prehľad splnených úloh s možnosťou ich obnovenia bez poškodenia postavy. |
 | Odmeňovací toast | Animované RPG-štýlové oznámenie (`RewardToast`) o získanom XP, zlate a prípadnom postupe na vyššiu úroveň. |
 
-![Zoznam úloh To-Do](docs/screenshots/todo-page.png)
+![Zoznam úloh To-Do](docs/screenshots/app-overview.png)
 
 ---
 
@@ -326,5 +326,3 @@ Navrhované snímky používajú konvenciu cesty `docs/screenshots/<nazov>.png`.
 | `docs/screenshots/reward-toast.png` | `RewardToast` s ikonami XP a zlata a zeleným odznakom "LEVEL UP!". | Kľúčové funkcie |
 | `docs/screenshots/archive-page.png` | `ArchivePage` so sekciami "To-Do Tasks" a "Scheduled Tasks" pre splnené úlohy. | Kľúčové funkcie |
 | `docs/screenshots/focus-block-overlay.png` | Natívny blokovací overlay "Take a breath" so sériou a bodkami intervalov. | Focus Mode |
-
-> **Poznámka k snímkam:** Cieľové súbory v `docs/screenshots/` je potrebné doplniť ako reálne snímky obrazovky. Placeholdery v texte na ne odkazujú vopred, aby sa dokumentácia po pridaní obrázkov zobrazila kompletne.
