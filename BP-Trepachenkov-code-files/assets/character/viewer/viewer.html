@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Character Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+    #status {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 8px 12px;
+      font: 12px/1.4 -apple-system, system-ui, sans-serif;
+      color: #b00020;
+      background: rgba(255, 255, 255, 0.85);
+      pointer-events: none;
+      white-space: pre-wrap;
+      display: none;
+    }
+    #status.visible { display: block; }
+  </style>
+
+  <!--
+    Three.js is loaded from a CDN via ES module import-map. The Android
+    WebView already requires INTERNET (see AndroidManifest.xml); for fully
+    offline operation, mirror these files into assets/character/viewer/lib/
+    and rewrite the import-map paths to local URLs.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="status"></div>
+
+  <!-- Surface CDN / module-resolution failures so they don't manifest as a
+       silent blank canvas. The module script below replaces this on success. -->
+  <script>
+    window.addEventListener('error', (e) => {
+      const el = document.getElementById('status');
+      if (el) {
+        el.textContent = 'Viewer error: ' + (e.message || e.error || 'unknown');
+        el.classList.add('visible');
+      }
+    });
+  </script>
+
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>
