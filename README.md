@@ -30,8 +30,6 @@ Aplikácia na správu úloh (task management) postavená na frameworku **Flutter
 
 Aplikácia je organizovaná **feature-first** (podľa funkcií, nie podľa technických vrstiev), používa **Provider** na správu stavu a **Isar** ako lokálnu NoSQL databázu. Časť funkcionality, konkrétne **Focus Mode** (blokovanie aplikácií), je dostupná len na platforme Android, keďže sa opiera o natívny kód v jazyku Kotlin.
 
-> **Poznámka:** Táto dokumentácia vychádza výhradne zo zdrojového kódu a súboru `CLAUDE.md` v repozitári. Funkcie, súbory ani príkazy, ktoré v zdrojoch nie sú doložené, sa tu neuvádzajú.
-
 ---
 
 ## Kľúčové funkcie
