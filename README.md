@@ -1,4 +1,4 @@
-# bp_flutter_app
+# Bakalárska práca "Mobilná aplikácia na sledovanie návykov, správu úloh a obmedzovanie digitálnych rozptýlení" - Oleksandr Trepachenkov
 
 Aplikácia na správu úloh (task management) postavená na frameworku **Flutter**, ktorá kombinuje klasický zoznam úloh s **RPG systémom postavy** (role-playing game, hra na hrdinov). Plnenie úloh odmeňuje používateľa skúsenostnými bodmi (XP), zlatom a postupom na vyššie úrovne, pričom postavu je možné vizualizovať a prispôsobovať v zabudovanom **3D prehliadači**.
 
@@ -120,10 +120,6 @@ Vybrané vzory dátovej vrstvy:
 - **Podpora archívu:** každý repozitár drží `currentTasks` aj `archivedTasks`; `fetchTasks()` ich delí v pamäti. Pre `TaskRepository` je archivované `isDone`. Po redizajne v2 sú všetky naplánované úlohy opakujúce sa, preto je `archivedTasks` v `ScheduledTaskRepository` vždy prázdne (pole sa ponecháva kvôli kompatibilite API s `ArchivePage`).
 - `restoreTask(Id id)` nastaví `isDone = false` bez volania `failTask()`, teda **bez vrátenia XP/zlata a bez poškodenia postavy**. Používa ho výhradne `ArchivePage`.
 
-<p align="center">
-  <img src="docs/screenshots/character-screen.png" alt="Detail postavy s 3D prehliadačom" width="300" />
-</p>
-
 ### Štruktúra priečinkov
 
 Kód v `lib/` je organizovaný **feature-first**: každá funkcia vlastní svoje modely, providery, stránky, widgety a (kde treba) služby.
@@ -206,20 +202,20 @@ Každá úloha sleduje `streak`, `lastStreakDate` a `lastCompletedDate` pre po s
 
 ### UI
 
+Každá naplánovaná úloha sa konfiguruje dvoma navzájom prepojenými časťami: **opakovaním** (kedy je úloha aktívna) a **pripomienkou** (kedy a ako notifikovať). Obe sa editujú spolu v paneli `ScheduledTaskOverlay`, ktorý skladá `RecurrencePicker` a `ReminderPicker` nad sebou a pod každý vykresľuje živý inline popis z `scheduled_task_descriptions.dart` (`recurrenceSummaryFrom(...)`, `notificationSummaryFrom(...)`).
+
+Na úrovni zoznamu:
+
 - `ScheduledTaskPage` delí `currentTasks` na sekcie **Today** / **Not today** podľa `task.isActiveOn(today)`. Dlaždice v "off-day" zostávajú plne interaktívne (editovateľné aj splniteľné); splnenie "off-day" úlohy udelí XP/zlato, ale **nemení polia série**.
-- `RecurrencePicker` je komponovaný editor (prepínač Daily/Weekly/Monthly → pod-editor) s presetmi pre týždeň (Weekdays/Weekends/Every day).
-- `ReminderPicker` ponúka výber času (`showTimePicker`) a pole pre minúty predstihu.
-- `scheduled_task_descriptions.dart` (`utils/`) generuje živé inline popisy pod pickermi (`recurrenceSummaryFrom(...)`, `notificationSummaryFrom(...)`) a kompaktný odznak `recurrenceShortBadge(task)`.
-- `ScheduledTaskTile` zobrazuje na "off-day" obalenie cez `Opacity(0.5)`, amber odznak série (ak `streak > 0`), kompaktný odznak opakovania a odznak času notifikácie.
-
-Vytváranie a úprava naplánovanej úlohy prebieha v paneli `ScheduledTaskOverlay`, ktorý kombinuje `RecurrencePicker` a `ReminderPicker` so živými inline popismi pod nimi.
-
+- `ScheduledTaskTile` zobrazuje na "off-day" obalenie cez `Opacity(0.5)`, amber odznak série (ak `streak > 0`), kompaktný odznak opakovania (`recurrenceShortBadge(task)`) a odznak času notifikácie.
 
 <p align="center">
   <img src="docs/screenshots/scheduled-task-page.png" alt="Naplánované úlohy - sekcie Today / Not today" width="300" />
 </p>
 
-Jednotlivé režimy `RecurrencePicker`-a :
+#### 1. Opakovanie — `RecurrencePicker`
+
+`RecurrencePicker` je komponovaný editor: prepínač **Daily / Weekly / Monthly** mení pod-editor, pričom Weekly ponúka aj presety (Weekdays / Weekends / Every day). Vybraný režim napĺňa polia modelu opísané vyššie v sekcii [Vzory opakovania](#vzory-opakovania) a určuje, ktoré dni vyhovejú predikátu `task.isActiveOn(...)`.
 
 <p align="center">
   <img src="docs/screenshots/scheduled-task-recurrence-picker-daily.png" alt="RecurrencePicker - režim Daily" width="220" />
@@ -227,12 +223,9 @@ Jednotlivé režimy `RecurrencePicker`-a :
   <img src="docs/screenshots/scheduled-task-recurrence-picker-monthly.png" alt="RecurrencePicker - režim Monthly" width="220" />
 </p>
 
-Jednotlivé režimy `ReminderPicker` : 
-<p align="center">
-  <img src="docs/screenshots/scheduled-task-reminder-picker.png" alt="ReminderPicker - výber času a predstihu" width="300" />
-</p>
+#### 2. Pripomienka — `ReminderPicker`
 
-`ReminderPicker` (`widgets/reminder_picker.dart`) ponúka štyri režimy ako sériu prepínacích tlačidiel. Zvolený režim riadi, ktoré polia sa zobrazia a koľko notifikácií sa naplánuje. Čas notifikácie (`notificationHour` / `notificationMinute`) je oddelený od termínu úlohy a vyberá sa cez `showTimePicker`; pole predstihu používa `minutesBefore` (predvolene 15).
+Tam, kde opakovanie hovorí **v ktoré dni** je úloha aktívna, pripomienka určuje **kedy v rámci dňa** notifikovať. `ReminderPicker` (`widgets/reminder_picker.dart`) ponúka štyri režimy ako sériu prepínacích tlačidiel; zvolený režim riadi, ktoré polia sa zobrazia a koľko notifikácií sa naplánuje. Čas notifikácie (`notificationHour` / `notificationMinute`) je oddelený od termínu úlohy a vyberá sa cez `showTimePicker`; pole predstihu používa `minutesBefore` (predvolene 15).
 
 | Režim | Štítok v UI | Zobrazené polia | Správanie notifikácie |
 |---|---|---|---|
@@ -276,6 +269,7 @@ Funkcia `features/character/` zobrazuje 3D model postavy a umožňuje jeho prisp
 > **Upozornenie na zachytenie gest:** widget prehliadača deklaruje `gestureRecognizers` a má zapnuté `useHybridComposition: true`. Voľby `disableHorizontalScroll` / `disableVerticalScroll` sa **nesmú** nastaviť, inak natívny `OnTouchListener` pohltí dotyky skôr, než ich uvidí stránka. Canvas vo `viewer.html` má `touch-action: none`, čo je nutné, aby `OrbitControls` mohli prevziať dotyky.
 
 <p align="center">
+  <img src="docs/screenshots/character-screen.png" alt="Detail postavy s 3D prehliadačom" width="300" />
   <img src="docs/screenshots/customization-panel.png" alt="Panel prispôsobenia postavy" width="300" />
 </p>
 
@@ -283,28 +277,78 @@ Funkcia `features/character/` zobrazuje 3D model postavy a umožňuje jeho prisp
 
 ## Focus Mode (režim sústredenia)
 
-> **Iba Android.** Funkcia sa opiera o natívny kód v jazyku Kotlin a platform channels (kanály medzi Flutter a natívnou vrstvou).
+> **Iba Android.** Funkcia sa opiera o natívny kód v jazyku Kotlin a platform channels (kanály medzi Flutter a natívnou vrstvou). Na ostatných platformách sú volania kanála ošetrené try-catch a Focus Mode je fakticky neaktívny.
 
-Focus Mode umožňuje blokovať rušivé aplikácie počas definovaných časových okien. Kľúčové natívne komponenty:
-
-- `FocusBlockingService.kt` je Android foreground service (popredná služba), ktorý každých 1,5 s prehľadáva `UsageStatsManager`. Pri zistení blokovanej aplikácie počas aktívneho okna zobrazí natívny celoplošný overlay (`TYPE_APPLICATION_OVERLAY`) s rozhraním "Take a breath", indikátorom série a bodkami intervalov (pip dots).
-- `MainActivity.kt` obsluhuje platform channel `com.example.bp_flutter_app/focus_mode` (napr. `getInstalledApps`, kontroly oprávnení, ovládanie blokovacej služby, `updateBlockedApps`, `updateScheduleJson`, `consumeNativeBypasses`, `consumeNativeIntervals`, `goToHomeScreen`).
-- `EndOfDayAlarmReceiver.kt` je `BroadcastReceiver` plánovaný cez `AlarmManager.setRepeating()` na polnoc; samotné vyhodnotenie odmeny beží pri ďalšom spustení aplikácie.
-
-**Vyžadované oprávnenia Android:** `QUERY_ALL_PACKAGES`, `PACKAGE_USAGE_STATS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `SYSTEM_ALERT_WINDOW`.
-
-Časované intervaly sú "zadarmo" (nepočítajú sa ako bypass pre sériu ani odmenu). Naraz môže byť aktívny interval len jednej skupiny (single-interval model).
-
-Skupiny sa spravujú v paneli `FocusGroupOverlay`, ktorý má tri režimy riadené enumom `FocusEditMode`: `createGroup`, `editGroup` a `viewGroup` (len na čítanie, všetky vstupy sú deaktivované). Výber blokovaných aplikácií prebieha cez `AppPickerDialog` (celoobrazovkový vyhľadávací dialóg s ikonou, názvom a názvom balíka).
+Focus Mode pomáha používateľovi vyhnúť sa rušivým aplikáciám počas vopred definovaných častí dňa. Používateľ si vytvorí **skupinu** (`FocusGroup`) — zoznam aplikácií, ktoré sa majú zablokovať, plus rozvrh (časové okná a dni v týždni). Keď je skupina práve aktívna a používateľ otvorí niektorú z jej aplikácií, natívna služba prekryje obrazovku celoplošným overlayom „Take a breath" a zabráni používaniu. Za deň bez porušenia získa skupina sériu (streak) a postava odmenu; voliteľné časované intervaly a prísny (strict) režim dolaďujú, nakoľko striktné blokovanie je.
 
 <p align="center">
-  <img src="docs/screenshots/focus-mode-page.png" alt="Focus Mode - zoznam skupín" width="220" />
+  <img src="docs/screenshots/FocusModeRecord.gif" alt="Focus Mode - ukážka behu (blokovací overlay)" width="280" />
+</p>
+
+### Dátový model (`FocusGroup`)
+
+Skupina (`features/focus_mode/models/focus_group.dart`, `@Collection`) drží celú konfiguráciu aj runtime stav:
+
+| Pole | Typ | Význam |
+|---|---|---|
+| `name` | `String` | Názov skupiny. |
+| `appPackageNames` / `appDisplayNames` | `List<String>` | Paralelné zoznamy blokovaných aplikácií (package + zobrazovaný názov). |
+| `timeWindows` | `List<FocusTimeWindow>` | Časové okná (`@embedded`); každé má `startHour/Minute` a `endHour/Minute`. Okno smie prechádzať cez polnoc (`spansNextDay`). |
+| `activeDays` | `List<int>` | Dni v týždni (1 = pondelok … 7 = nedeľa), v ktoré rozvrh platí. |
+| `isStrict` | `bool` | Prísny režim — počas aktívneho okna sa skupina nedá vypnúť, upraviť ani zmazať. |
+| `isEnabled` | `bool` | Hlavný vypínač skupiny. |
+| `streak` / `lastStreakDate` | `int` / `String?` | Séria po sebe idúcich vyhovujúcich dní a dátum jej poslednej evaluácie (bráni dvojitému započítaniu). |
+| `intervalLengthMinutes` | `int` (3–15) | Dĺžka jedného časovaného intervalu (výnimky). |
+| `intervalsPerDay` | `int` | Počet voľných intervalov na deň (0 = vypnuté). |
+| `intervalsUsedToday` / `intervalEndsAt` | `int` / `String?` | Koľko intervalov sa dnes minulo a kedy končí práve bežiaci interval (ISO 8601). |
+
+Z týchto polí sa odvodzujú kľúčové gettery: `isCurrentlyActive` (skupina je zapnutá, dnešný deň je v `activeDays` a aktuálny čas padá do niektorého okna), `isLocked` (`isStrict && isCurrentlyActive` → uzamknutá pred úpravami) a `intervalsRemaining`.
+
+### Správa skupín (UI)
+
+`FocusModePage` zobrazuje zoznam skupín ako karty `_FocusGroupCard` s ikonami blokovaných aplikácií, prepínačom zapnutia a odznakom série. Tvorba a úprava prebieha v paneli `FocusGroupOverlay`, ktorý má tri režimy riadené enumom `FocusEditMode`:
+
+| Režim | Spúšťač | Správanie |
+|---|---|---|
+| `createGroup` | „+" / nová skupina | Prázdny formulár (predvolené `activeDays = Po–Pia`). |
+| `editGroup` | úprava existujúcej | Edituje **hlbokú kópiu** skupiny (`_deepCopyGroup`), takže zrušenie zmeny nič neuloží. |
+| `viewGroup` | uzamknutá skupina | Len na čítanie — všetky vstupy sú deaktivované (uplatní sa, keď je skupina `isLocked`). |
+
+Pred uložením provider validuje skupinu: `canSaveGroup` vyžaduje názov, aspoň jednu aplikáciu, aspoň jedno okno a aspoň jeden deň; `validateTimeWindows` odmietne navzájom sa prekrývajúce okná. Výber blokovaných aplikácií prebieha cez `AppPickerDialog` — celoobrazovkový vyhľadávací zoznam nainštalovaných aplikácií s ikonou, názvom a názvom balíka (ikony sa cachujú v `FocusModeProvider.appIconCache`).
+
+<p align="center">
+  <img src="docs/screenshots/focus-mode-page.png" alt="FocusModePage - zoznam skupín s odznakom série" width="220" />
   <img src="docs/screenshots/focus-mode-overlay-create.png" alt="FocusGroupOverlay - režim vytvorenia/úpravy" width="220" />
-  <img src="docs/screenshots/focus-mode-overlay-view.png" alt="FocusGroupOverlay - režim len na čítanie" width="220" />
+  <img src="docs/screenshots/focus-mode-overlay-view.png" alt="FocusGroupOverlay - režim len na čítanie (uzamknutá skupina)" width="220" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/focus-mode-app-picker.png" alt="AppPickerDialog - výber nainštalovaných aplikácií" width="300" />
+  <img src="docs/screenshots/focus-mode-edit-schedule-picker.png" alt="Editor časových okien a dní v týždni" width="220" />
+  <img src="docs/screenshots/focus-mode-app-picker.png" alt="AppPickerDialog - výber nainštalovaných aplikácií" width="220" />
 </p>
+
+### Prísny režim (strict), séria a denná odmena
+
+- **Prísny režim** zamkne skupinu počas aktívneho okna (`isLocked`): nedá sa vypnúť, upraviť ani zmazať a v overlayi sa nedá použiť bypass. Jediná cesta von za behu je `liftStrictMode(...)`, ktorá **vynuluje sériu** danej skupiny.
+- **Denná dochádzka (`DailyCompliance`):** každý bypass cez overlay sa zaznamená (`recordBypass`) a deň sa označí ako nevyhovujúci. Na konci dňa `evaluateEndOfDay(...)`: ak deň ostal vyhovujúci, udelí postave odmenu cez `_characterNotifier.completeTask(TaskDifficulty.medium)`; následne pre každú skupinu, ktorá dnes mala aktívny deň, buď zvýši `streak`, alebo ho pri porušení vynuluje (`_evaluateGroupStreaks`).
+- **Vyhodnotenie je odolné voči zmeškaniu:** `EndOfDayAlarmReceiver.kt` (cez `AlarmManager.setRepeating()` o polnoci) je len budíček — samotné vyhodnotenie beží pri ďalšom štarte aplikácie. `init()` cez `_checkPendingReward()` dorovná aj včerajšok, ak budík nezbehol.
+
+### Časované intervaly (výnimky)
+
+Skupina môže povoliť niekoľko **voľných intervalov** za deň (`intervalsPerDay`) s nastaviteľnou dĺžkou (`intervalLengthMinutes`, 3–15 min). Počas bežiaceho intervalu sú aplikácie skupiny dočasne prístupné a interval sa **nepočíta ako bypass** (neláme sériu ani neruší odmenu). Naraz môže byť aktívny interval len jednej skupiny (single-interval model) a zapnutie prísneho režimu okamžite ukončí prebiehajúci interval (`saveOverlay`). Spotrebu intervalov nahláša natívny overlay, Flutter ju preberie cez `_consumeNativeIntervals()` a kvóty sa na konci dňa resetujú (`_resetDailyIntervals`).
+
+### Natívna vrstva (Kotlin) a synchronizácia
+
+Stav vlastní `FocusModeProvider` (Dart, `ChangeNotifier`), ale samotné blokovanie beží natívne. Pri každej zmene `_syncBlockingService()` spočíta `currentlyBlockedPackages` a buď službu spustí/aktualizuje (`startBlockingService` / `updateBlockedApps` + `updateScheduleJson` cez `_buildScheduleJson()`), alebo ju zastaví, keď nie je čo blokovať.
+
+| Natívny komponent | Úloha |
+|---|---|
+| `MainActivity.kt` | Obsluhuje platform channel `com.example.bp_flutter_app/focus_mode`: `getInstalledApps`, kontroly/žiadosti o oprávnenia, ovládanie služby, `updateBlockedApps`, `updateScheduleJson`, `consumeNativeBypasses`, `consumeNativeIntervals`, `goToHomeScreen`. |
+| `FocusBlockingService.kt` | Foreground service, ktorý každých ~1,5 s číta `UsageStatsManager`. Pri otvorení blokovanej aplikácie počas aktívneho okna zobrazí natívny overlay (`TYPE_APPLICATION_OVERLAY`) „Take a breath" s indikátorom série a bodkami intervalov (pip dots). Blokovacia obrazovka je **plne natívna**, takže Flutter nepotrebuje `MethodChannel` listener ani `navigatorKey`. |
+| `EndOfDayAlarmReceiver.kt` | `BroadcastReceiver` plánovaný na polnoc; spúšťa dorovnanie dennej odmeny pri ďalšom otvorení aplikácie. |
+
+Udalosti, ktoré sa stali, kým Flutter nebežal (bypassy, spotreba intervalov), si natívna vrstva odloží a Dart ich pri štarte vyzdvihne cez `_consumeNativeBypasses()` a `_consumeNativeIntervals()`.
+
+**Vyžadované oprávnenia Android:** `QUERY_ALL_PACKAGES`, `PACKAGE_USAGE_STATS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `SYSTEM_ALERT_WINDOW`. Bez udelených oprávnení `permissionsGranted` ostáva `false` a UI vyzve používateľa cez `requestPermissions()`.
 
 
 ---
