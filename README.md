@@ -452,7 +452,6 @@ Deklarované balíky assetov (`pubspec.yaml`): `assets/character/skins/`, `asset
   - `model_viewer_plus` renderuje jeden GLB na widget; vrstvenie viacerých widgetov rozsynchronizuje kamery, čo spôsobuje drift. Potrebná bola **jedna scéna s viacerými meshmi**, ktorú `<model-viewer>` neposkytuje.
   - `webview_flutter` neexponuje `setAllowFileAccessFromFileURLs`, ktoré projekt potrebuje; `flutter_inappwebview` áno.
   - Načítavanie cez URL je neživotaschopné, pretože moderný Chromium tvrdo blokuje `fetch()` proti `file://` URL. Preto sa GLB prenáša ako bajty cez most (bytes-over-bridge).
-- **`INTERNET` oprávnenie pre 3D prehliadač.** `AndroidManifest.xml` vyžaduje `INTERNET`, lebo import-map sťahuje Three.js z CDN. Plne offline režim by si vyžiadal zrkadlenie knižníc Three.js do `assets/character/viewer/lib/` a prepísanie ciest v import-map.
 - **Akcentová farba je len UI.** Tónuje okraj a gradient prehliadača a zvýraznenie výberu; samotný 3D model nerefarbí (to by si vyžiadalo prácu s materiálmi/shadermi GLB).
 - **Horizon-based plánovač notifikácií.** `ScheduledTaskNotifications` počíta najbližších 30 aktívnych dátumov cez `task.upcomingActiveDates(now)` a plánuje každý zvlášť, pretože `DateTimeComponents` nevie vyjadriť vzory "každých N dní" ani "poradový deň v týždni".
 - **Natívny overlay pre Focus Mode.** Blokovacia obrazovka beží ako natívny Android overlay priamo zo služby, vďaka čomu na strane Flutter netreba `MethodChannel` listener ani `navigatorKey`.
